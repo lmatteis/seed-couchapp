@@ -77,31 +77,62 @@ app.index = function () {
   request({url:'api/_design/app/_view/updated?limit=15'}, function (err, resp) {
     resp.rows.forEach(function (row) {
       $('<div class="top-package"></div>')
-      .append('<div class="top-package-title"><a href="#/'+row.id+'">'+row.key+'</a></div>')
+      .append('<div class="top-package-title"><a href="#/accessions/'+row.id+'">'+row.key+'</a></div>')
       .append('<div class="top-package-updated">'+row.value +'</div>')
       .append('<div class="spacer"></div>')
       .appendTo('div#latest-packages')
-    })
-  })
+    });
+  });
+ 
+  request({url:'api/_design/app/_view/centers?group=true'}, function (err, resp) {
+    var results = {};
+    resp.rows.forEach(function (row) {
+        $('<div class="top-package"></div>')
+        .append('<div class="top-package-title"><a href="#/centers/'+row.key+'">'+row.key+'</a></div>')
+        .append('<div class="top-package-dep">'+row.value+'</div>')
+        .append('<div class="spacer"></div>')
+        .appendTo('div#top-dep-packages')
+    });
+  });
   
 };
 
 app.about = function() {
     clearContent();
-    request({url:'about.html', dataType:'html'}, function (e, resp) {
-        $('div#content').html('<div id="main-container">'+resp+'</div>');
-    });
+    // get commits list of README.md so we can get the latest commit which is the first in the array
+    $.getJSON("https://github.com/api/v2/json/commits/list/lmatteis/seed-couchapp/master/README.md?callback=?", function(data) {
+        var latest_commit = data.commits[0],
+            latest_commit_id = latest_commit.id;
+        // now  get the README.md blob
+        $.getJSON("https://github.com/api/v2/json/blob/show/lmatteis/seed-couchapp/"+latest_commit_id+"/README.md?callback=?", function(data) {
+            // convert markdown to html
+            var md = data.blob.data;
+            var converter = new Showdown.converter();
+            var html = converter.makeHtml(md);
 
+            $('div#content').html('<div id="main-container">'+html+'</div>');
+        });
+    });
 };
 
 app.showAccession = function() {
-    /*
+    var id = this.params.id;
     clearContent();
-    request({url:'about.html', dataType:'html'}, function (e, resp) {
-        $('div#content').html('<div id="main-container">'+resp+'</div>');
+    var package = $('<div id="main-container"></div>');
+    $('div#content').html(package);
+    request({url:'/api/'+id}, function (err, doc) {
+        var skip = ["_id", "_rev"];
+        package.append("<div class='package-title'>"+doc.ACCENUMB+"</div>");
+        package.append('<div class="pkg-link"><a href="#/">'+doc.INSTCODE+'</a></div>');
+        package.append('<div class="spacer"></div>');
+        var $table = $("<table></table>");
+        package.append($table);
+        for(var key in doc) {
+            var value = doc[key];
+            if($.inArray(key, skip) > -1) continue;
+            $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
+        }
     });
-    */
-
 };
 
 $(function () { 
@@ -110,7 +141,7 @@ $(function () {
     this.get('', app.index);
     this.get("#/", app.index);
     this.get("#/_about", app.about);
-    this.get("#/:id", app.showAccession);
+    this.get("#/accessions/:id", app.showAccession);
   })
   app.s.run();
 });

@@ -17,8 +17,15 @@ ddoc.views = {};
 
 ddoc.views.updated = {
     map: function (doc) {
-        emit(doc.ACCENUMB, doc.INSTCODE);
+        emit(doc.ACCENUMB, doc.CROPNAME);
     }
+};
+
+ddoc.views.centers = {
+    map: function (doc) {
+        emit(doc.INSTCODE, 1);
+    },
+    reduce: "_sum"
 };
 
 ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx) {   
