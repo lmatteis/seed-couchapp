@@ -52,6 +52,9 @@ function clearContent () {
 
 var app = {};
 app.index = function () {
+    var skip = this.params.skip;
+    if(!skip) skip = 0;
+    var limit = 30;
     clearContent();
   $('div#content').html(
     '<div id="search-box">' +
@@ -68,13 +71,20 @@ app.index = function () {
         '<div id="top-dep-packages"><div class="top-title">Centers</div></div>' +
       '</div>' +
       '<div class="spacer"></div>' +
+      '<br /><div id="skip"><a href="#/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>' +
     '</div>'
   );
   request({url:'api/_all_docs?limit=0'}, function (err, resp) {
     $('div#totals').html('<a href="/#/_browse/all">' + (resp.total_rows - 1) +' total accessions</a>')
   })
 
-  request({url:'api/_design/app/_view/updated?limit=15'}, function (err, resp) {
+  request({
+    url:'api/_design/app/_view/updated?'+param({
+            limit: limit,
+            descending: true,
+            skip: skip
+        })
+    }, function (err, resp) {
     resp.rows.forEach(function (row) {
       $('<div class="top-package"></div>')
       .append('<div class="top-package-title"><a href="#/accessions/'+row.id+'">'+row.key+'</a></div>')
@@ -140,6 +150,7 @@ $(function () {
     // Index of all databases
     this.get('', app.index);
     this.get("#/", app.index);
+    this.get("#/skip/:skip", app.index);
     this.get("#/_about", app.about);
     this.get("#/accessions/:id", app.showAccession);
   })
