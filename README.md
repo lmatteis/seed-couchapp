@@ -6,5 +6,5 @@ Anything that is available through a website can be scraped. The goal is to scra
 
 # Useful Links
 
-    - [seed-scraper](https://github.com/lmatteis/seed-scraper) (code for the scraper)
-    - [seed-couchapp](https://github.com/lmatteis/seed-couchapp) (the couchapp for this site)
+- [seed-scraper](https://github.com/lmatteis/seed-scraper) (code for the scraper)
+- [seed-couchapp](https://github.com/lmatteis/seed-couchapp) (the couchapp for this site)
