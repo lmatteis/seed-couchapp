@@ -60,7 +60,7 @@ app.index = function () {
     '<div id="search-box">' +
       '<div id="search-box-title">Find accessions...</div>' +
       '<div id="search-box-input">' +
-        '<input id="search-input"></input>' +
+        '<form id="search"><input id="search-input" /></form>' +
       '</div>' +
     '</div>' +
     '<div id="main-container">' +
@@ -104,7 +104,23 @@ app.index = function () {
         .appendTo('div#top-dep-packages')
     });
   });
-  
+
+  $("#search").submit(function(e){
+    var searchVal = $("#search-input").val();
+    var qs = param({
+      startkey: JSON.stringify(searchVal),
+      endkey: JSON.stringify(searchVal + "ZZZZZZZZZZZZZZZZZZZ"),
+      limit: 25
+    });
+    request({url:'api/_design/app/_view/search?' + qs}, function(err, resp) {
+      $("#main-container").html("");
+      resp.rows.forEach(function (row) {
+        $("#main-container").append("<a href='#/accessions/"+row.id+"'>"+row.key+"</a><br />");
+      });
+    });
+    e.preventDefault();
+    e.stopPropagation();
+  });
 };
 
 app.about = function() {
