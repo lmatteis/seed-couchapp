@@ -141,6 +141,12 @@ app.about = function() {
     });
 };
 
+function ciatImg(path) {
+  var path = path.replace(" ", "  ");
+  var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
+  return "<img src='"+url+"' />";
+}
+
 app.showAccession = function() {
     var id = this.params.id;
     clearContent();
@@ -156,6 +162,9 @@ app.showAccession = function() {
         for(var key in doc) {
             var value = doc[key];
             if($.inArray(key, skip) > -1) continue;
+            if(key == "Seed/Plant") {
+              value = ciatImg(doc[key]);
+            }
             $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
         }
     });
