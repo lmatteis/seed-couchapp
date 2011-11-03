@@ -30,6 +30,13 @@ ddoc.views.centers = {
   reduce: "_sum"
 };
 
+ddoc.views.accessionsByCenter = {
+  map: function (doc) {
+    if(doc.INSTCODE && doc.ACCENUMB)
+      emit(doc.INSTCODE, doc.ACCENUMB);
+  }
+};
+
 ddoc.views.search = {
   map: function(doc) {
     if(doc.ACCENUMB)

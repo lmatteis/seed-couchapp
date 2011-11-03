@@ -170,6 +170,21 @@ app.showAccession = function() {
     });
 };
 
+app.showCenterAccessions = function() {
+    var center_id = this.params.id;
+    clearContent();
+    var package = $('<div id="main-container"></div>');
+    $('div#content').html(package);
+    request({url:'/api/_design/app/_view/accessionsByCenter?'+param({
+      key: JSON.stringify(center_id),
+      limit: 25
+    })}, function (err, resp) {
+      $("#main-container").html("");
+      resp.rows.forEach(function (row) {
+        $("#main-container").append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
+      });
+    });
+};
 $(function () { 
   app.s = $.sammy(function () {
     // Index of all databases
@@ -178,6 +193,7 @@ $(function () {
     this.get("#/skip/:skip", app.index);
     this.get("#/_about", app.about);
     this.get("#/accessions/:id", app.showAccession);
+    this.get("#/centers/:id", app.showCenterAccessions);
   })
   app.s.run();
 });
