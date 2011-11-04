@@ -142,7 +142,7 @@ app.about = function() {
 };
 
 function ciatImg(path) {
-  var path = path.replace(" ", "  ");
+  //var path = path.replace(" ", "  ");
   var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
   return "<img src='"+url+"' />";
 }
@@ -162,7 +162,7 @@ app.showAccession = function() {
         for(var key in doc) {
             var value = doc[key];
             if($.inArray(key, skip) > -1) continue;
-            if(key == "Seed/Plant") {
+            if(key == "Seed/Plant" || key == "(Allele position for the Locus EST-1) Ref. Gel" || key == "(Allele position for the Locus EST-1) Gel") {
               value = ciatImg(doc[key]);
             }
             $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
@@ -171,18 +171,24 @@ app.showAccession = function() {
 };
 
 app.showCenterAccessions = function() {
+    var limit = 25;
+    var skip = this.params.skip;
+    if(!skip) skip = 0;
     var center_id = this.params.id;
     clearContent();
     var package = $('<div id="main-container"></div>');
     $('div#content').html(package);
     request({url:'/api/_design/app/_view/accessionsByCenter?'+param({
       key: JSON.stringify(center_id),
-      limit: 25
+      limit: limit,
+      skip: skip
     })}, function (err, resp) {
-      $("#main-container").html("");
+      $main = $("#main-container");
+      $main.html("");
       resp.rows.forEach(function (row) {
-        $("#main-container").append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
+        $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
       });
+      $main.append('<br /><div id="skip"><a href="#/centers/'+center_id+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
     });
 };
 $(function () { 
@@ -193,6 +199,7 @@ $(function () {
     this.get("#/skip/:skip", app.index);
     this.get("#/_about", app.about);
     this.get("#/accessions/:id", app.showAccession);
+    this.get("#/centers/:id/skip/:skip", app.showCenterAccessions);
     this.get("#/centers/:id", app.showCenterAccessions);
   })
   app.s.run();
