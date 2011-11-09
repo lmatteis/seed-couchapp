@@ -37,24 +37,22 @@ ddoc.views.accessionsByCenter = {
   }
 };
 
+ddoc.views.accByVariety = {
+  map: function (doc) {
+    if (doc["Variety"]) {
+      emit(doc["Variety"], 1);
+    }
+  }
+};
+
 ddoc.views.search = {
   map: function(doc) {
-    if(doc.ACCENUMB)
-      emit(doc.ACCENUMB, 1);
-/*
-    for(var i in doc) {
-      var value = doc[i]
-          , words = value.split(" ")
-
-      words = words.map(function(w){
-        return w.trim().toLowerCase();
-      });
-
-      words.forEach(function(w) {
-        emit(w, doc._id);
-      });
+    if(doc.ACCENUMB) {
+      emit(doc.ACCENUMB, doc.ACCENUMB);
+    } 
+    if (doc["Variety"]) {
+      emit(doc["Variety"], doc.ACCENUMB);
     }
-*/
   }
 };
 

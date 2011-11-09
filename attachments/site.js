@@ -45,8 +45,26 @@ var param = function( a ) {
 	}
 }
 function clearContent () {
-    $('div#content').html('')
+    $('div#content').html('');
+
     $('div#totals').html('')
+}
+
+function bindSearch(query){
+  $('div#content').append(
+    '<div id="search-box">' +
+      '<div id="search-box-title">Find accessions...</div>' +
+      '<div id="search-box-input">' +
+        '<form id="search"><input id="search-input" value="'+(query || "")+'"/></form>' +
+      '</div>' +
+    '</div>');
+
+  $("#search").submit(function(e){
+    var searchVal = $("#search-input").val();
+    window.location.hash = "/search/"+$.trim(searchVal);
+    e.preventDefault();
+    e.stopPropagation();
+  });
 }
 
 
@@ -56,13 +74,8 @@ app.index = function () {
     if(!skip) skip = 0;
     var limit = 30;
     clearContent();
-  $('div#content').html(
-    '<div id="search-box">' +
-      '<div id="search-box-title">Find accessions...</div>' +
-      '<div id="search-box-input">' +
-        '<form id="search"><input id="search-input" /></form>' +
-      '</div>' +
-    '</div>' +
+    bindSearch();
+  $('div#content').append(
     '<div id="main-container">' +
       '<div id="results"></div>' +
       '<div class="spacer"></div>' +
@@ -105,21 +118,29 @@ app.index = function () {
     });
   });
 
-  $("#search").submit(function(e){
-    var searchVal = $("#search-input").val();
-    var qs = param({
-      startkey: JSON.stringify(searchVal),
-      endkey: JSON.stringify(searchVal + "ZZZZZZZZZZZZZZZZZZZ"),
-      limit: 25
+};
+
+app.search = function() {
+  var query = this.params.query;
+  var skip = this.params.skip;
+  if(!skip) skip = 0;
+  var limit = 30;
+  clearContent();
+  bindSearch(query);
+  var $main = $("<div id='main-container'></div>");
+  $('div#content').append($main);
+
+  var qs = param({
+    startkey: JSON.stringify(query),
+    endkey: JSON.stringify(query + "ZZZZZZZZZZZZZZZZZZZ"),
+    limit: limit,
+    skip: skip
+  });
+  request({url:'api/_design/app/_view/search?' + qs}, function(err, resp) {
+    resp.rows.forEach(function (row) {
+      $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
     });
-    request({url:'api/_design/app/_view/search?' + qs}, function(err, resp) {
-      $("#main-container").html("");
-      resp.rows.forEach(function (row) {
-        $("#main-container").append("<a href='#/accessions/"+row.id+"'>"+row.key+"</a><br />");
-      });
-    });
-    e.preventDefault();
-    e.stopPropagation();
+    $main.append('<br /><div id="skip"><a href="#/search/'+query+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
   });
 };
 
@@ -141,10 +162,16 @@ app.about = function() {
     });
 };
 
-function ciatImg(path) {
-  //var path = path.replace(" ", "  ");
-  var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
-  return "<img src='"+url+"' />";
+var imgconv = {
+  ciat: function (path) {
+    var path = path.replace(" ", "  ");
+    var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
+    return "<img src='"+url+"' />";
+  },
+  ciat_two: function(path) {
+    var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
+    return "<img src='"+url+"' />";
+  }
 }
 
 app.showAccession = function() {
@@ -162,8 +189,10 @@ app.showAccession = function() {
         for(var key in doc) {
             var value = doc[key];
             if($.inArray(key, skip) > -1) continue;
-            if(key == "Seed/Plant" || key == "(Allele position for the Locus EST-1) Ref. Gel" || key == "(Allele position for the Locus EST-1) Gel") {
-              value = ciatImg(doc[key]);
+            if(key == "Seed/Plant") {
+              value = imgconv.ciat(doc[key]);
+            } else if (key == "(Allele position for the Locus EST-1) Ref. Gel" || key == "(Allele position for the Locus EST-1) Gel") {
+              value = imgconv.ciat_two(doc[key]);
             }
             $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
         }
@@ -201,6 +230,10 @@ $(function () {
     this.get("#/accessions/:id", app.showAccession);
     this.get("#/centers/:id/skip/:skip", app.showCenterAccessions);
     this.get("#/centers/:id", app.showCenterAccessions);
+
+    this.get("#/search/:query/skip/:skip", app.search);
+    this.get("#/search/:query", app.search);
   })
   app.s.run();
+
 });
