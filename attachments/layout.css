@@ -316,3 +316,7 @@ div#bottom-liner {
   width:100%;
   background-color: #EBEBEB;
 }
+
+img {
+  max-width: 700px;
+}

@@ -189,7 +189,7 @@ app.showAccession = function() {
         for(var key in doc) {
             var value = doc[key];
             if($.inArray(key, skip) > -1) continue;
-            if(key == "Seed/Plant") {
+            if(key == "(Photo) Seed/Plant" || key == "(Photo) Flower") {
               value = imgconv.ciat(doc[key]);
             } else if (key == "(Allele position for the Locus EST-1) Ref. Gel" || key == "(Allele position for the Locus EST-1) Gel") {
               value = imgconv.ciat_two(doc[key]);

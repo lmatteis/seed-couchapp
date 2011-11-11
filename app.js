@@ -37,10 +37,11 @@ ddoc.views.accessionsByCenter = {
   }
 };
 
+var variety = "(Taxonomic information) Variety";
 ddoc.views.accByVariety = {
   map: function (doc) {
-    if (doc["Variety"]) {
-      emit(doc["Variety"], 1);
+    if (doc[variety]) {
+      emit(doc[variety], 1);
     }
   }
 };
@@ -50,8 +51,8 @@ ddoc.views.search = {
     if(doc.ACCENUMB) {
       emit(doc.ACCENUMB, doc.ACCENUMB);
     } 
-    if (doc["Variety"]) {
-      emit(doc["Variety"], doc.ACCENUMB);
+    if (doc[variety]) {
+      emit(doc[variety], doc.ACCENUMB);
     }
   }
 };
