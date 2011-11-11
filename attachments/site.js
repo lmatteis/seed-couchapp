@@ -163,15 +163,51 @@ app.about = function() {
 };
 
 var imgconv = {
-  ciat: function (path) {
-    var path = path.replace(" ", "  ");
-    var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
-    return "<img src='"+url+"' />";
-  },
-  ciat_two: function(path) {
+  ciat: function (numspaces, path) {
+    var spaces = "";
+    for(var i=0; i<numspaces; i++) {
+      spaces += " ";
+    }
+    var path = path.replace(" ", spaces);
     var url = "http://isa.ciat.cgiar.org/urg/foo/"+path;
     return "<img src='"+url+"' />";
   }
+}
+var mcpd = [
+  "ACCENUMB",
+  "ACCENAME",
+  "COLLNUMB",
+  "GENUS",
+  "SPECIES",
+  "ACQDATE",
+  "ORIGCTY",
+  "LATITUDE",
+  "LONGITUDE",
+  "CROPNAME",
+  "INSTCODE"
+];
+
+function tripreport(str) {
+  var links = str.match(/\(\'(.*)\'\)/);
+  if(links.length) {
+    return "<a href='"+links[1]+"' target='_blank'>"+links[1]+"</a>";
+  } else {
+    return "No trip report found";
+  }
+}
+
+function addRow($table, key, value) {
+  if(key == "Seed/Plant" || key == "(Photo) Seed/Plant" || key == "(Photo) Flower") {
+    value = imgconv.ciat(2, value);
+  } else if (key == "(Allele position for the Locus EST-1) Ref. Gel" ) {
+    value = imgconv.ciat(1, value);
+  } else if (key == "(Allele position for the Locus EST-1) Gel") {
+    value = imgconv.ciat(3, value);
+  }
+  if(key == "(Collection information) Trip report") {
+    value = tripreport(value);
+  }
+  $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
 }
 
 app.showAccession = function() {
@@ -186,15 +222,18 @@ app.showAccession = function() {
         package.append('<div class="spacer"></div>');
         var $table = $("<table></table>");
         package.append($table);
+        // first do the mcpd
+        for(var i=0; i<mcpd.length; i++) {
+          if(doc[mcpd[i]]) {
+            addRow($table, mcpd[i], doc[mcpd[i]]);
+          }
+        }
+        // then do the rest, and skip MCPD (so MCPD shows first)
         for(var key in doc) {
             var value = doc[key];
             if($.inArray(key, skip) > -1) continue;
-            if(key == "(Photo) Seed/Plant" || key == "(Photo) Flower") {
-              value = imgconv.ciat(doc[key]);
-            } else if (key == "(Allele position for the Locus EST-1) Ref. Gel" || key == "(Allele position for the Locus EST-1) Gel") {
-              value = imgconv.ciat_two(doc[key]);
-            }
-            $table.append('<tr><td><a href="#/">'+key+'</a></td><td>'+value+'</td></tr>');
+            if($.inArray(key, mcpd) > -1) continue;
+            addRow($table, key, value);
         }
     });
 };
