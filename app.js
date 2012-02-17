@@ -54,6 +54,21 @@ ddoc.views.accessions = {
   }
 };
 
+ddoc.views.search = {
+    map: function(doc) {
+        if(doc.ACCENUMB) {
+            var accenumb = doc.ACCENUMB;
+            for(var i in doc) {
+                var value = doc[i];
+                var tokens = value.split(/[^\w]+/i);
+                tokens.map(function(token) {
+                    emit(token, accenumb);
+                });
+            }
+        } 
+    }
+}
+
 ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx) {   
   if (newDoc._deleted === true && userCtx.roles.indexOf('_admin') === -1) {
     throw "Only admin can delete documents on this database.";
