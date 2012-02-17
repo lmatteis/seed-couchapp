@@ -152,7 +152,7 @@ app.search = function() {
     resp.rows.forEach(function (row) {
       $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
     });
-    $main.append('<br /><div id="skip"><a href="#/search/'+query+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
+    $main.append('<br /><div id="skip"><a href="#/search/'+view+'/'+query+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
   });
 };
 
