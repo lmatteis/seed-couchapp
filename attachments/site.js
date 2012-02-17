@@ -51,7 +51,7 @@ function clearContent () {
 }
 
 function bindSearch(query){
-    var views = ["accessions", "accessionsByCenter", "accessionsByVariety"];
+    var views = ["search", "accessions", "accessionsByCenter", "accessionsByVariety"];
     var $cont = $('div#content');
     $cont.append(
     '<div id="search-box">' +
