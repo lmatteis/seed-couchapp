@@ -37,24 +37,20 @@ ddoc.views.accessionsByCenter = {
   }
 };
 
-ddoc.views.accByVariety = {
+ddoc.views.accessionsByVariety = {
   map: function (doc) {
-    var variety = "(Taxonomic information) Variety";
-    if (doc[variety]) {
-      emit(doc[variety], 1);
-    }
-  }
-};
-
-ddoc.views.search = {
-  map: function(doc) {
-    if(doc.ACCENUMB) {
-      emit(doc.ACCENUMB, doc.ACCENUMB);
-    } 
     var variety = "(Taxonomic information) Variety";
     if (doc[variety]) {
       emit(doc[variety], doc.ACCENUMB);
     }
+  }
+};
+
+ddoc.views.accessions = {
+  map: function(doc) {
+    if(doc.ACCENUMB) {
+      emit(doc.ACCENUMB, doc.ACCENUMB);
+    } 
   }
 };
 

@@ -51,20 +51,31 @@ function clearContent () {
 }
 
 function bindSearch(query){
-  $('div#content').append(
+    var views = ["accessions", "accessionsByCenter", "accessionsByVariety"];
+    var $cont = $('div#content');
+    $cont.append(
     '<div id="search-box">' +
       '<div id="search-box-title">Find accessions...</div>' +
       '<div id="search-box-input">' +
-        '<form id="search"><input id="search-input" value="'+(query || "")+'"/></form>' +
+        '<form id="search"><input id="search-input" value="'+(query || "")+'"/>'+
+        '<select></select>'+ 
+        '</form>' +
       '</div>' +
     '</div>');
 
-  $("#search").submit(function(e){
-    var searchVal = $("#search-input").val();
-    window.location.hash = "/search/"+$.trim(searchVal);
-    e.preventDefault();
-    e.stopPropagation();
-  });
+    var $select = $cont.find("select");
+
+    for(var i=0; i<views.length; i++) {
+        $select.append("<option>"+views[i]+"</option>"); 
+    }
+
+    $("#search").submit(function(e){
+        var searchVal = $("#search-input").val();
+        var view = $select.val();
+        window.location.hash = "/search/"+view+"/"+$.trim(searchVal);
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }
 
 
@@ -122,6 +133,7 @@ app.index = function () {
 
 app.search = function() {
   var query = this.params.query;
+  var view = this.params.view;
   var skip = this.params.skip;
   if(!skip) skip = 0;
   var limit = 30;
@@ -136,7 +148,7 @@ app.search = function() {
     limit: limit,
     skip: skip
   });
-  request({url:'api/_design/app/_view/search?' + qs}, function(err, resp) {
+  request({url:'api/_design/app/_view/'+view+'?' + qs}, function(err, resp) {
     resp.rows.forEach(function (row) {
       $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
     });
@@ -197,7 +209,9 @@ function tripreport(str) {
 }
 
 function addRow($table, key, value) {
-  if(key == "Seed/Plant" || key == "(Photo) Seed/Plant" || key == "(Photo) Flower") {
+  if(key == "Seed/Plant") {
+    value = imgconv.ciat(1, value);
+  } else if(key == "(Photo) Seed/Plant" || key == "(Photo) Flower" || key == "(Photo) Herbarium") {
     value = imgconv.ciat(2, value);
   } else if (key == "(Allele position for the Locus EST-1) Ref. Gel" ) {
     value = imgconv.ciat(1, value);
@@ -270,8 +284,8 @@ $(function () {
     this.get("#/centers/:id/skip/:skip", app.showCenterAccessions);
     this.get("#/centers/:id", app.showCenterAccessions);
 
-    this.get("#/search/:query/skip/:skip", app.search);
-    this.get("#/search/:query", app.search);
+    this.get("#/search/:view/:query/skip/:skip", app.search);
+    this.get("#/search/:view/:query", app.search);
   })
   app.s.run();
 
