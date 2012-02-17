@@ -142,18 +142,21 @@ app.search = function() {
   var $main = $("<div id='main-container'></div>");
   $('div#content').append($main);
 
-  var qs = param({
-    startkey: JSON.stringify(query),
-    endkey: JSON.stringify(query + "ZZZZZZZZZZZZZZZZZZZ"),
-    limit: limit,
-    skip: skip
-  });
-  request({url:'api/_design/app/_view/'+view+'?' + qs}, function(err, resp) {
-    resp.rows.forEach(function (row) {
-      $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
+    var tokens = query.split(/[^\w]+/i);
+    tokens.map(function(token) {
+      var qs = param({
+        startkey: JSON.stringify(token),
+        endkey: JSON.stringify(token + "ZZZZZZZZZZZZZZZZZZZ"),
+        limit: limit,
+        skip: skip
+      });
+      request({url:'api/_design/app/_view/'+view+'?' + qs}, function(err, resp) {
+        resp.rows.forEach(function (row) {
+          $main.append("<a href='#/accessions/"+row.id+"'>"+row.value+"</a><br />");
+        });
+        $main.append('<br /><div id="skip"><a href="#/search/'+view+'/'+query+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
+      });
     });
-    $main.append('<br /><div id="skip"><a href="#/search/'+view+'/'+query+'/skip/'+(parseInt(skip, 10) + limit)+'">More</a></div>');
-  });
 };
 
 app.about = function() {
