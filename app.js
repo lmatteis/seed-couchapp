@@ -54,6 +54,15 @@ ddoc.views.accessions = {
   }
 };
 
+ddoc.views.accessionsNormalized = {
+    map: function(doc) {
+        if(doc.ACCENUMB) {
+            var normalized = doc.ACCENUMB.replace(" ", "", "g");
+            emit(normalized, doc.ACCENUMB);
+        }
+    }
+};
+
 ddoc.views.search = {
     map: function(doc) {
         if(doc.ACCENUMB) {
